@@ -1,0 +1,10 @@
+pub mod core;
+pub mod messaging;
+pub mod chat;
+pub mod forum;
+pub mod inline;
+pub mod stickers;
+pub mod payments;
+pub mod games;
+pub mod files;
+pub mod advanced;
