@@ -6,3 +6,4 @@ pub mod pin;
 pub mod invite_link;
 pub mod join_request;
 pub mod leave;
+pub mod sticker_set;

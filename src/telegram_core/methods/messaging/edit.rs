@@ -1,5 +1,5 @@
 //! 消息编辑相关方法
-//! 包含 editMessageText、editMessageCaption、editMessageMedia、editMessageReplyMarkup
+//! 包含 editMessageText、editMessageCaption、editMessageMedia、editMessageReplyMarkup、stopPoll
 
 use serde::Serialize;
 use crate::telegram_core::client::TelegramClient;
@@ -8,6 +8,7 @@ use crate::telegram_core::types::common::{ChatId, MessageEntity};
 use crate::telegram_core::types::message::Message;
 use crate::telegram_core::types::keyboard::InlineKeyboardMarkup;
 use super::send::text::LinkPreviewOptions;
+use super::send::sticker_media_extra::InputMedia;
 
 /// editMessageText 参数
 #[derive(Debug, Clone, Serialize)]
@@ -63,6 +64,23 @@ pub struct EditMessageCaptionParams {
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }
 
+/// editMessageMedia 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct EditMessageMediaParams {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub business_connection_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chat_id: Option<ChatId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message_id: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inline_message_id: Option<String>,
+    /// 新媒体（必填）
+    pub media: InputMedia,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<InlineKeyboardMarkup>,
+}
+
 /// editMessageReplyMarkup 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct EditMessageReplyMarkupParams {
@@ -74,6 +92,17 @@ pub struct EditMessageReplyMarkupParams {
     pub message_id: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_message_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_markup: Option<InlineKeyboardMarkup>,
+}
+
+/// stopPoll 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct StopPollParams {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub business_connection_id: Option<String>,
+    pub chat_id: ChatId,
+    pub message_id: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_markup: Option<InlineKeyboardMarkup>,
 }
@@ -97,6 +126,15 @@ impl TelegramClient {
         self.request("editMessageCaption", params).await
     }
 
+    /// 编辑消息媒体
+    /// 对应官方方法：editMessageMedia
+    pub async fn edit_message_media(
+        &self,
+        params: &EditMessageMediaParams,
+    ) -> TelegramResult<Message> {
+        self.request("editMessageMedia", params).await
+    }
+
     /// 编辑消息回复标记
     /// 对应官方方法：editMessageReplyMarkup
     pub async fn edit_message_reply_markup(
@@ -104,5 +142,14 @@ impl TelegramClient {
         params: &EditMessageReplyMarkupParams,
     ) -> TelegramResult<Message> {
         self.request("editMessageReplyMarkup", params).await
+    }
+
+    /// 停止投票
+    /// 对应官方方法：stopPoll
+    pub async fn stop_poll(
+        &self,
+        params: &StopPollParams,
+    ) -> TelegramResult<serde_json::Value> {
+        self.request("stopPoll", params).await
     }
 }

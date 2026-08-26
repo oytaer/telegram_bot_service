@@ -1,72 +1,91 @@
-//! 邀请链接相关方法
-//! 包含 exportChatInviteLink、createChatInviteLink、editChatInviteLink、revokeChatInviteLink
+//! 聊天邀请链接完整方法
+//! 包含 export/create/edit/revoke 以及 subscription 系列
 
 use serde::Serialize;
 use crate::telegram_core::client::TelegramClient;
 use crate::telegram_core::error::TelegramResult;
-use crate::telegram_core::types::chat::ChatInviteLink;
 use crate::telegram_core::types::common::ChatId;
 
-/// exportChatInviteLink 参数
+/// ChatInviteLink（返回类型简化）
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct ChatInviteLink {
+    pub invite_link: String,
+    #[serde(default)]
+    pub creates_join_request: bool,
+    #[serde(default)]
+    pub is_primary: bool,
+    #[serde(default)]
+    pub is_revoked: bool,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub expire_date: Option<i64>,
+    #[serde(default)]
+    pub member_limit: Option<i32>,
+    #[serde(default)]
+    pub pending_join_request_count: Option<i32>,
+    #[serde(default)]
+    pub subscription_period: Option<i32>,
+    #[serde(default)]
+    pub subscription_price: Option<i32>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct ExportChatInviteLinkParams {
-    /// 目标聊天 ID（必填）
     pub chat_id: ChatId,
 }
 
-/// createChatInviteLink 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct CreateChatInviteLinkParams {
-    /// 目标聊天 ID（必填）
     pub chat_id: ChatId,
-    /// 链接名称（选填，0-32字符）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// 过期时间（选填，Unix 时间戳）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expire_date: Option<i64>,
-    /// 成员数量限制（选填，1-99999）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_limit: Option<i32>,
-    /// 是否需要加入审批（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creates_join_request: Option<bool>,
 }
 
-/// editChatInviteLink 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct EditChatInviteLinkParams {
-    /// 目标聊天 ID（必填）
     pub chat_id: ChatId,
-    /// 要编辑的邀请链接（必填）
     pub invite_link: String,
-    /// 新名称（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// 新过期时间（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expire_date: Option<i64>,
-    /// 新成员限制（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub member_limit: Option<i32>,
-    /// 是否需要加入审批（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub creates_join_request: Option<bool>,
 }
 
-/// revokeChatInviteLink 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct CreateChatSubscriptionInviteLinkParams {
+    pub chat_id: ChatId,
+    pub subscription_period: i32,
+    pub subscription_price: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct EditChatSubscriptionInviteLinkParams {
+    pub chat_id: ChatId,
+    pub invite_link: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct RevokeChatInviteLinkParams {
-    /// 目标聊天 ID（必填）
     pub chat_id: ChatId,
-    /// 要撤销的邀请链接（必填）
     pub invite_link: String,
 }
 
 impl TelegramClient {
-    /// 导出（生成）主邀请链接
-    /// 对应官方方法：exportChatInviteLink
-    /// 需要 can_invite_users 权限
     pub async fn export_chat_invite_link(
         &self,
         params: &ExportChatInviteLinkParams,
@@ -74,9 +93,6 @@ impl TelegramClient {
         self.request("exportChatInviteLink", params).await
     }
 
-    /// 创建额外邀请链接
-    /// 对应官方方法：createChatInviteLink
-    /// 需要 can_invite_users 权限
     pub async fn create_chat_invite_link(
         &self,
         params: &CreateChatInviteLinkParams,
@@ -84,9 +100,6 @@ impl TelegramClient {
         self.request("createChatInviteLink", params).await
     }
 
-    /// 编辑邀请链接
-    /// 对应官方方法：editChatInviteLink
-    /// 需要 can_invite_users 权限
     pub async fn edit_chat_invite_link(
         &self,
         params: &EditChatInviteLinkParams,
@@ -94,9 +107,20 @@ impl TelegramClient {
         self.request("editChatInviteLink", params).await
     }
 
-    /// 撤销邀请链接
-    /// 对应官方方法：revokeChatInviteLink
-    /// 需要 can_invite_users 权限
+    pub async fn create_chat_subscription_invite_link(
+        &self,
+        params: &CreateChatSubscriptionInviteLinkParams,
+    ) -> TelegramResult<ChatInviteLink> {
+        self.request("createChatSubscriptionInviteLink", params).await
+    }
+
+    pub async fn edit_chat_subscription_invite_link(
+        &self,
+        params: &EditChatSubscriptionInviteLinkParams,
+    ) -> TelegramResult<ChatInviteLink> {
+        self.request("editChatSubscriptionInviteLink", params).await
+    }
+
     pub async fn revoke_chat_invite_link(
         &self,
         params: &RevokeChatInviteLinkParams,

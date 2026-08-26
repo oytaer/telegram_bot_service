@@ -1,36 +1,19 @@
-//! 论坛话题管理相关方法
-//! 包含 createForumTopic、editForumTopic、closeForumTopic、reopenForumTopic、deleteForumTopic 等
+//! Forum 话题完整方法
+//! 包含 create/edit/close/reopen/delete_forum_topic 以及通用主题相关方法
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use crate::telegram_core::client::TelegramClient;
 use crate::telegram_core::error::TelegramResult;
 use crate::telegram_core::types::common::ChatId;
-
-/// 论坛话题（官方 ForumTopic）
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ForumTopic {
-    /// 话题消息线程 ID
-    pub message_thread_id: i32,
-    /// 话题名称
-    pub name: String,
-    /// 图标颜色
-    pub icon_color: i32,
-    /// 自定义 emoji 图标 ID（选填）
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon_custom_emoji_id: Option<String>,
-}
+use crate::telegram_core::types::forum::ForumTopic;
 
 /// createForumTopic 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct CreateForumTopicParams {
-    /// 目标超级群 ID（必填）
     pub chat_id: ChatId,
-    /// 话题名称（必填，1-128字符）
     pub name: String,
-    /// 图标颜色（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_color: Option<i32>,
-    /// 自定义 emoji 图标 ID（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_custom_emoji_id: Option<String>,
 }
@@ -38,40 +21,80 @@ pub struct CreateForumTopicParams {
 /// editForumTopic 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct EditForumTopicParams {
-    /// 目标超级群 ID（必填）
     pub chat_id: ChatId,
-    /// 话题消息线程 ID（必填）
     pub message_thread_id: i32,
-    /// 新名称（选填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// 新自定义 emoji 图标 ID（选填，传空字符串可移除）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_custom_emoji_id: Option<String>,
 }
 
-/// closeForumTopic / reopenForumTopic / deleteForumTopic 参数
+/// closeForumTopic 参数
 #[derive(Debug, Clone, Serialize)]
-pub struct ForumTopicActionParams {
-    /// 目标超级群 ID（必填）
+pub struct CloseForumTopicParams {
     pub chat_id: ChatId,
-    /// 话题消息线程 ID（必填）
+    pub message_thread_id: i32,
+}
+
+/// reopenForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct ReopenForumTopicParams {
+    pub chat_id: ChatId,
+    pub message_thread_id: i32,
+}
+
+/// deleteForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct DeleteForumTopicParams {
+    pub chat_id: ChatId,
     pub message_thread_id: i32,
 }
 
 /// unpinAllForumTopicMessages 参数
 #[derive(Debug, Clone, Serialize)]
 pub struct UnpinAllForumTopicMessagesParams {
-    /// 目标超级群 ID（必填）
     pub chat_id: ChatId,
-    /// 话题消息线程 ID（必填）
     pub message_thread_id: i32,
 }
 
+/// editGeneralForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct EditGeneralForumTopicParams {
+    pub chat_id: ChatId,
+    pub name: String,
+}
+
+/// closeGeneralForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct CloseGeneralForumTopicParams {
+    pub chat_id: ChatId,
+}
+
+/// reopenGeneralForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct ReopenGeneralForumTopicParams {
+    pub chat_id: ChatId,
+}
+
+/// hideGeneralForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct HideGeneralForumTopicParams {
+    pub chat_id: ChatId,
+}
+
+/// unhideGeneralForumTopic 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct UnhideGeneralForumTopicParams {
+    pub chat_id: ChatId,
+}
+
+/// unpinAllGeneralForumTopicMessages 参数
+#[derive(Debug, Clone, Serialize)]
+pub struct UnpinAllGeneralForumTopicMessagesParams {
+    pub chat_id: ChatId,
+}
+
 impl TelegramClient {
-    /// 创建论坛话题
-    /// 对应官方方法：createForumTopic
-    /// 需要 can_manage_topics 权限
     pub async fn create_forum_topic(
         &self,
         params: &CreateForumTopicParams,
@@ -79,49 +102,81 @@ impl TelegramClient {
         self.request("createForumTopic", params).await
     }
 
-    /// 编辑论坛话题
-    /// 对应官方方法：editForumTopic
-    /// 需要 can_manage_topics 权限
-    pub async fn edit_forum_topic(&self, params: &EditForumTopicParams) -> TelegramResult<bool> {
+    pub async fn edit_forum_topic(
+        &self,
+        params: &EditForumTopicParams,
+    ) -> TelegramResult<bool> {
         self.request("editForumTopic", params).await
     }
 
-    /// 关闭论坛话题
-    /// 对应官方方法：closeForumTopic
-    /// 需要 can_manage_topics 权限
     pub async fn close_forum_topic(
         &self,
-        params: &ForumTopicActionParams,
+        params: &CloseForumTopicParams,
     ) -> TelegramResult<bool> {
         self.request("closeForumTopic", params).await
     }
 
-    /// 重新打开论坛话题
-    /// 对应官方方法：reopenForumTopic
-    /// 需要 can_manage_topics 权限
     pub async fn reopen_forum_topic(
         &self,
-        params: &ForumTopicActionParams,
+        params: &ReopenForumTopicParams,
     ) -> TelegramResult<bool> {
         self.request("reopenForumTopic", params).await
     }
 
-    /// 删除论坛话题
-    /// 对应官方方法：deleteForumTopic
-    /// 需要 can_manage_topics 权限
     pub async fn delete_forum_topic(
         &self,
-        params: &ForumTopicActionParams,
+        params: &DeleteForumTopicParams,
     ) -> TelegramResult<bool> {
         self.request("deleteForumTopic", params).await
     }
 
-    /// 取消话题内所有置顶消息
-    /// 对应官方方法：unpinAllForumTopicMessages
     pub async fn unpin_all_forum_topic_messages(
         &self,
         params: &UnpinAllForumTopicMessagesParams,
     ) -> TelegramResult<bool> {
         self.request("unpinAllForumTopicMessages", params).await
+    }
+
+    /// 编辑通用论坛主题名称
+    pub async fn edit_general_forum_topic(
+        &self,
+        params: &EditGeneralForumTopicParams,
+    ) -> TelegramResult<bool> {
+        self.request("editGeneralForumTopic", params).await
+    }
+
+    pub async fn close_general_forum_topic(
+        &self,
+        params: &CloseGeneralForumTopicParams,
+    ) -> TelegramResult<bool> {
+        self.request("closeGeneralForumTopic", params).await
+    }
+
+    pub async fn reopen_general_forum_topic(
+        &self,
+        params: &ReopenGeneralForumTopicParams,
+    ) -> TelegramResult<bool> {
+        self.request("reopenGeneralForumTopic", params).await
+    }
+
+    pub async fn hide_general_forum_topic(
+        &self,
+        params: &HideGeneralForumTopicParams,
+    ) -> TelegramResult<bool> {
+        self.request("hideGeneralForumTopic", params).await
+    }
+
+    pub async fn unhide_general_forum_topic(
+        &self,
+        params: &UnhideGeneralForumTopicParams,
+    ) -> TelegramResult<bool> {
+        self.request("unhideGeneralForumTopic", params).await
+    }
+
+    pub async fn unpin_all_general_forum_topic_messages(
+        &self,
+        params: &UnpinAllGeneralForumTopicMessagesParams,
+    ) -> TelegramResult<bool> {
+        self.request("unpinAllGeneralForumTopicMessages", params).await
     }
 }
