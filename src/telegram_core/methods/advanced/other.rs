@@ -7,7 +7,6 @@ use crate::telegram_core::error::TelegramResult;
 use crate::telegram_core::types::common::ChatId;
 use crate::telegram_core::types::message::Message;
 use crate::telegram_core::types::keyboard::InlineKeyboardMarkup;
-use crate::telegram_core::types::common::MessageEntity;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct GetUserPersonalChatMessagesParams {
