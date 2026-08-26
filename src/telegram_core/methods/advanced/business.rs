@@ -1,9 +1,21 @@
 //! Business 连接与 Business Account 相关方法
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::telegram_core::client::TelegramClient;
 use crate::telegram_core::error::TelegramResult;
 use crate::telegram_core::methods::messaging::send::media::InputFile;
+use crate::telegram_core::types::user::User;
+
+/// 商业连接（官方 BusinessConnection）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BusinessConnection {
+    pub id: String,
+    pub user: User,
+    pub user_chat_id: i64,
+    pub date: i64,
+    pub can_reply: bool,
+    pub is_enabled: bool,
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct GetBusinessConnectionParams {
@@ -103,7 +115,7 @@ impl TelegramClient {
     pub async fn get_business_connection(
         &self,
         params: &GetBusinessConnectionParams,
-    ) -> TelegramResult<serde_json::Value> {
+    ) -> TelegramResult<BusinessConnection> {
         self.request("getBusinessConnection", params).await
     }
 

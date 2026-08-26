@@ -3,7 +3,6 @@
 use serde::Serialize;
 use crate::telegram_core::client::TelegramClient;
 use crate::telegram_core::error::TelegramResult;
-use crate::telegram_core::methods::messaging::send::media::InputFile;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PostStoryParams {
